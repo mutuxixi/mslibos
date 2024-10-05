@@ -289,14 +289,14 @@ pub fn fd_fdstat_get(mut ctx: FuncContext<'_>, args: (i32, i32)) -> tinywasm::Re
         _ => (),
     }
     // Todo: 从表中寻找fd
-    // let FdStruct = table.find(fd);
-    // fdstat.fs_filetype = match FdStruct.kind {
+    // let msFdStat = table.find(fd);
+    // fdstat.fs_filetype = match msFdStat.kind {
     //     0 => 4, // 0 代表File，4代表RegularFile
     //     1 => 3  // 1 代表Dir，3代表Directory
     // };
-    // fdstat.fs_flags = FdStruct.flags;
-    // fdstat.fs_rights_base = FdStruct.fs_rights_base;
-    // fdstat.fs_rights_inheriting = FdStruct.fs_rights_inheriting;
+    // fdstat.fs_flags = msFdStat.flags;
+    // fdstat.fs_rights_base = msFdStat.fs_rights_base;
+    // fdstat.fs_rights_inheriting = msFdStat.fs_rights_inheriting;
     if fd == 4 || fd == 5 || fd == 6 || fd == 7 || fd == 8 {
         // 假设前面几个都打开的文件
         fdstat.fs_filetype = 4;
@@ -637,6 +637,9 @@ pub fn path_open(
     }
 
     let ret_fd = libos!(open(&path, flags, mode)).unwrap() as i32;
+    // Todo: 将对应信息添加到table中，结构体struct {name, fs_flags, fs_rights_base, fs_rights_inheriting, kind}
+    // 其中，name是路径，fs_flags是Fdflags类型，fs_rights_base和fs_rights_inheriting直接存输入参数。
+    // kind表示文件类型，是个enum。eg. File Dir
     #[cfg(feature = "log")]
     println!("ret_fd: {:?}", ret_fd);
     mem.store(retptr, core::mem::size_of::<i32>(), &ret_fd.to_ne_bytes())?;
